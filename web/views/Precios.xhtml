@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+
+    </h:head>
+    <h:body>
+        <ui:composition template="/template/Template.xhtml">
+
+            <ui:define name="content">
+
+                <!--Formulario principal-->
+
+                <h:form id="frmPrincipal">
+                    <p:blockUI widgetVar="loadingBus" trigger="btnBuscar" block="frmPrincipal">
+                        <h:panelGrid styleClass="custom-painelgrid-center">
+                            <h:outputText value="Espere..." />
+                            <p:graphicImage value="../resources/img/cargando.gif" />
+                        </h:panelGrid>
+                    </p:blockUI>
+                    <p:blockUI widgetVar="loadingSim" trigger="btnSimulador" block="frmPrincipal">
+                        <h:panelGrid styleClass="custom-painelgrid-center">
+                            <h:outputText value="Espere..." />
+                            <p:graphicImage value="../resources/img/cargando.gif" />
+                        </h:panelGrid>
+                    </p:blockUI>
+                    <p:blockUI widgetVar="loadingCotNueva" trigger="btnCotNueva" block="frmPrincipal">
+                        <h:panelGrid styleClass="custom-painelgrid-center">
+                            <h:outputText value="Espere..." />
+                            <p:graphicImage value="../resources/img/cargando.gif" />
+                        </h:panelGrid>
+                    </p:blockUI>
+                    <p:growl id="msgs" showDetail="true"
+                             skipDetailIfEqualsSummary="true" />
+
+                    <div style="text-align: center">
+                        <p:badge value="MÓDULO DE ACTUALIZACIÓN DE PRECIOS"  styleClass="rojo etiqueta" />
+                    </div>
+                    <p:panelGrid columns="8"  layout="grid">
+
+
+                        <p:inputText id="cot" value="#{precios.cveDoc}" placeholder="COLOCA NÚMERO DE COTIZACIÓN" styleClass="etiqueta"/>
+                        <p:commandButton id="btnBuscar" value="BUSCAR COITZACIÓN" 
+                                         icon="pi pi-search" 
+                                         update="frmPrincipal:a1:tblClientes, frmPrincipal:a2:tblEncabezado, frmPrincipal:a3:tblPartidas"
+                                         styleClass="etiqueta bus"
+                                         actionListener="#{precios.buscarCotizacion}"
+                                         />
+
+                        <p:badge value="COLOCA PORCENTAJE" styleClass="etiqueta"/>
+                        <p:spinner id="step" value="#{precios.porcentajeDescuento}"  style="width: 125px" stepFactor="0.25"/>
+                        <p:commandButton id="btnSimulador" value="SIMULAR PORCENTAJE" 
+                                         icon="pi pi-cog" 
+                                         update="frmPrincipal:a1:tblClientes, frmPrincipal:a2:tblEncabezado, frmPrincipal:a3:tblPartidas"
+                                         styleClass="etiqueta sim"
+                                         actionListener="#{precios.buscarCotizacionSimulador()}"
+                                         />
+                        <p:commandButton id="btnCotNueva" value="ENVIAR COTIZACIÓN ACTUAL A NUEVA COTIZACIÓN" 
+                                         icon="pi pi-clone" 
+                                         update="frmPrincipal:a1:tblClientes, frmPrincipal:a2:tblEncabezado, frmPrincipal:a3:tblPartidas"
+                                         styleClass="etiqueta cot"
+                                         actionListener="#{precios.clonarCotización(precios.cveDoc)}"
+                                         />
+                    </p:panelGrid>
+                    <p:divider/>
+                    <div style="text-align: center">
+                        <p:badge value="ACTUALIZACIÓN DE PRECIOS EN COTIZACIÓN" styleClass="etiqueta" />
+                    </div>
+                    <p:divider/>
+                    <p:accordionPanel id="a1">
+                        <p:tab title="INFORMACIÓN DEL CLIENTE">
+                            <p:dataTable id="tblClientes" styleClass="tabla" reflow="true"
+                                         scrollable="true" 
+                                         scrollHeight="250"
+                                         var="c" 
+                                         value="#{precios.listarClie}" 
+                                         emptyMessage="NO HAY REGISTROS">
+
+                                <p:column headerText="NOMBRE">
+                                    <h:outputText value="#{c.nombre}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column>
+
+                                <p:column headerText="RFC">
+                                    <h:outputText value="#{c.rfc}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="CALLE">
+                                    <h:outputText value="#{c.calle}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="COLONIA">
+                                    <h:outputText value="#{c.colonia}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="MUNICIPIO">
+                                    <h:outputText value="#{c.municipio}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="ESTADO">
+                                    <h:outputText value="#{c.estado}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="TELÉFONO">
+                                    <h:outputText value="#{c.telefono}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                            </p:dataTable>
+                        </p:tab>
+                    </p:accordionPanel>
+
+                    <p:accordionPanel id="a2">
+                        <p:tab title="ENCABEZADO DE LA COTIZACIÓN">
+                            <p:dataTable id="tblEncabezado" styleClass="tabla" reflow="true"
+                                         scrollable="true" 
+                                         scrollHeight="250"
+                                         var="c" 
+                                         value="#{precios.listarFactc}" 
+                                         emptyMessage="NO HAY REGISTROS">
+
+                                <p:column headerText="# COTIZACIÓN">
+                                    <h:outputText value="#{c.cveDoc}" style="color: #9933ff; font-weight: bolder; font-size: small"/>
+                                </p:column>
+
+                                <p:column headerText="FECHA DOCUMENTO">
+                                    <h:outputText value="#{c.fechaDoc}" style="color: #9933ff; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="IMPORTE">
+                                    <h:outputText value="$ #{c.impTot4}" style="color: #9933ff; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+
+                                <p:column headerText="TOTAL">
+                                    <h:outputText value="$ #{c.importe}" style="color: #9933ff; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="CANTIDAD TOTAL">
+                                    <h:outputText value="#{c.canTot}" style="color: #9933ff; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="DESCUENTO TOTAL">
+                                    <h:outputText value="#{c.desTot}" style="color: #9933ff; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="CONDICIÓN">
+                                    <h:outputText value="#{c.condicion}" style="color: #9933ff; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+                            </p:dataTable>
+                        </p:tab>
+                    </p:accordionPanel>
+
+                    <p:accordionPanel id="a3">
+                        <p:tab title="PARTIDAS DE LA COTIZACIÓN">
+                            <p:dataTable id="tblPartidas" styleClass="tabla" reflow="true"
+                                         scrollable="true" 
+                                         scrollHeight="250"
+                                         var="c" 
+                                         value="#{precios.listarPartidas}" 
+                                         emptyMessage="NO HAY REGISTROS">
+
+                                <p:column headerText="PARTIDA" width="5%">
+                                    <h:outputText value="#{c.partida}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column>
+
+                                <p:column headerText="CLAVE" width="5%">
+                                    <h:outputText value="#{c.clave}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="DESCRIPCIÓN">
+                                    <h:outputText value="#{c.descripcion}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+
+                                <p:column headerText="CANTIDAD" width="5%">
+                                    <h:outputText value="#{c.cantidad}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="U/MEDIDA" width="5%">
+                                    <h:outputText value="#{c.unidadMedida}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="P. UNITARIO" width="5%">
+                                    <h:outputText value="$#{c.precio}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                                <p:column headerText="IMPORTE" width="5%">
+                                    <h:outputText value="$#{c.importe}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+                                
+                                <p:column headerText="IVA" width="5%">
+                                    <h:outputText value="$#{c.iva}" style="color: #2196F3; font-weight: bolder; font-size: small"/>
+                                </p:column> 
+
+                            </p:dataTable>
+                        </p:tab>
+                    </p:accordionPanel>
+
+                </h:form>
+
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

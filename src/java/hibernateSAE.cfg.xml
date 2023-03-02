@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.dialect">org.hibernate.dialect.FirebirdDialect</property>
+        <property name="hibernate.connection.driver_class">org.firebirdsql.jdbc.FBDriver</property>
+        <!--producción-->
+        <!--        <property name="hibernate.connection.url">jdbc:firebirdsql://localhost:3050/C:\Program Files (x86)\Common Files\Aspel\Sistemas Aspel\SAE8.00\Empresa01\Datos\SAE80EMPRE01.FDB</property>-->
+        <!--pruebas-->      
+        <property name="hibernate.connection.url">jdbc:firebirdsql://localhost:3050/C:\Program Files (x86)\Common Files\Aspel\Sistemas Aspel\SAE8.00\Empresa01\Datos\PRUEBAS_SAE80EMPRE01.FDB</property>
+        <!--        <property name="hibernate.connection.url">jdbc:firebirdsql://localhost:3050//firebird/data/SAE80EMPRE01.FDB</property>-->
+        <property name="hibernate.connection.username">sysdba</property>
+        <property name="hibernate.connection.password">masterkey</property>
+        <mapping class="com.dmjsistemas.sae.model.ParFactcClib01"/>
+        <mapping class="com.dmjsistemas.sae.model.ParFactc01"/>
+        <mapping class="com.dmjsistemas.sae.model.Clie01"/>
+        <mapping class="com.dmjsistemas.sae.model.ObsDocf01"/>
+        <mapping class="com.dmjsistemas.sae.model.Inve01"/>
+        <mapping class="com.dmjsistemas.sae.model.Factc01"/>
+        <mapping class="com.dmjsistemas.sae.model.FactcClib01"/>
+        <mapping class="com.dmjsistemas.sae.model.Foliosf01"/>
+    </session-factory>
+</hibernate-configuration>

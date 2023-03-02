@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-reverse-engineering PUBLIC "-//Hibernate/Hibernate Reverse Engineering DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-reverse-engineering-3.0.dtd">
+
+<hibernate-reverse-engineering>
+  <schema-selection/>
+  <table-filter match-name="FACTC01"/>
+  <table-filter match-name="FACTC_CLIB01"/>
+  <table-filter match-name="CLIE01"/>
+  <table-filter match-name="PAR_FACTC_CLIB01"/>
+  <table-filter match-name="OBS_DOCF01"/>
+  <table-filter match-name="INVE01"/>
+  <table-filter match-name="PAR_FACTC01"/>
+  <table-filter match-name="FOLIOSF01"/>
+</hibernate-reverse-engineering>

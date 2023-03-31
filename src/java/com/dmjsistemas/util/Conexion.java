@@ -18,7 +18,8 @@ public class Conexion {
     
     public void Conectar() {
         try {
-            Class.forName("org.firebirdsql.jdbc.FBDriver");    
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");    
+//            Class.forName("org.firebirdsql.jdbc.FBDriver");    
             this.cn = DriverManager.getConnection(Configuracion.getConexDB(), Configuracion.getConexUser(), Configuracion.getConexPwd());
         } catch (ClassNotFoundException | SQLException e) {
             System.out.println(e.getMessage());

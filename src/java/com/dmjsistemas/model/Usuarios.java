@@ -12,7 +12,7 @@ import javax.persistence.Table;
 public class Usuarios implements java.io.Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID", unique = true, nullable = false)
     private int id;
     @Column(name = "NOMBRE", nullable = false, length = 50)

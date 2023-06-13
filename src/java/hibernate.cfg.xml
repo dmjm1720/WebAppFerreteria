@@ -2,16 +2,10 @@
 <!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
     <session-factory>
-        <!--    <property name="hibernate.dialect">org.hibernate.dialect.FirebirdDialect</property>
-        <property name="hibernate.connection.driver_class">org.firebirdsql.jdbc.FBDriver</property>
-        <property name="hibernate.connection.url">jdbc:firebirdsql://localhost:3050/C:\SistemaFerreteria\dbFerreteria\FERRETERIA.FBD</property>-->
-        <!--<property name="hibernate.connection.url">jdbc:firebirdsql://localhost:3050//firebird/data/FERRETERIA.FBD</property>-->
-        <!--    <property name="hibernate.connection.username">sysdba</property>
-        <property name="hibernate.connection.password">masterkey</property>-->
-            <property name="hibernate.connection.driver_class">com.microsoft.sqlserver.jdbc.SQLServerDriver</property>
-<!--        <property name="hibernate.connection.url">jdbc:sqlserver://localhost:1433;databaseName=FERRETERIA</property>
+        <property name="hibernate.connection.driver_class">com.microsoft.sqlserver.jdbc.SQLServerDriver</property>
+        <!--        <property name="hibernate.connection.url">jdbc:sqlserver://localhost;databaseName=FERRETERIA</property>
         <property name="hibernate.connection.username">sa</property>
-        <property name="hibernate.connection.password">Dev23DMJMS1t3m45</property>-->
+        <property name="hibernate.connection.password">Pr4xi5A5a*</property>-->
         <property name="hibernate.connection.url">jdbc:sqlserver://SERVER\SQLEXPRESS;databaseName=FERRETERIA</property>
         <property name="hibernate.connection.username">sa</property>
         <property name="hibernate.connection.password">Portales02</property>

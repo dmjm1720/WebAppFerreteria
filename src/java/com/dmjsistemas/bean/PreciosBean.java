@@ -12,7 +12,6 @@ import com.dmjsistemas.sae.model.ParFactc01;
 import com.dmjsistemas.sae.model.ParFactcClib01;
 import com.dmjsistemas.sae.model.Partidas;
 import com.dmjsistemas.util.Conexion;
-import com.dmjsistemas.util.Configuracion;
 import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,6 +20,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.inject.Named;
 import javax.faces.view.ViewScoped;
@@ -58,6 +59,7 @@ public class PreciosBean extends Conexion implements Serializable {
     private int datEnv;
     private int datEnvAnt;
     private Infenvio01 i;
+    private int cveObsValida;
 
     public PreciosBean() {
     }
@@ -421,7 +423,7 @@ public class PreciosBean extends Conexion implements Serializable {
             actualizarPrecioPartidas(nuevoDocumento, (porcentajeDescuento / 100), item.getPartida(), item.getClave());
         });
         actualizarPrecioEncabezado(nuevoDocumento);
-        String info = "Se ha enviado la cotización número: " + oldDocu + "  a la cotización nueva con número: " + nuevoDocumento + " con el porcentaje: "+ porcentajeDescuento +"";
+        String info = "Se ha enviado la cotización número: " + oldDocu + "  a la cotización nueva con número: " + nuevoDocumento + " con el porcentaje: " + porcentajeDescuento + "";
         PrimeFaces.current().executeScript("Swal.fire({\n"
                 + "  position: 'top-center',\n"
                 + "  icon: 'success',\n"
@@ -528,8 +530,7 @@ public class PreciosBean extends Conexion implements Serializable {
             factc01.setCondicion(l.getCondicion());
             factc01.setNumPagos(l.getNumPagos());
             datEnvAnt = l.getDatEnvio();
-            nuevoCveInfo();
-            factc01.setDatEnvio(datEnv);///
+            
             factc01.setContado(l.getContado());
             factc01.setDatMostr(l.getDatMostr());
             factc01.setCveBita(l.getCveBita());
@@ -537,10 +538,27 @@ public class PreciosBean extends Conexion implements Serializable {
             factc01.setFechaelab(l.getFechaelab());
             factc01.setCtlpol(l.getCtlpol());
             //**""OBS_DOCF01""**//
-
+            //BUSCAR CVE_OBS Y GUARDAR DATO
             folioObsDocf01 = folObsDoc();
+
+            if (!l.getCveObs().equals(0)) {
+                buscarDatosPartidaCveObs(l.getCveObs(), folioObsDocf01);
+                factc01.setCveObs(folioObsDocf01);
+
+            } else {
+                factc01.setCveObs(0);
+            }
             folioObsDocf01Ante = l.getCveObs();
-            factc01.setCveObs(folioObsDocf01);///Revisar folio
+            int dE =nuevoCveInfo();
+                  // factc01.setDatEnvio(datEnv);///
+            if (!l.getDatEnvio().equals(0)) {
+                factc01.setDatEnvio(l.getDatEnvio());
+                actualizarInfEnvio(ultFolio, folioObsDocf01,dE);
+                factc01.setDatEnvio(dE);
+            } else {
+                factc01.setDatEnvio(0);
+            }
+
             //**""OBS_DOCF01""**//
             factc01.setEnlazado(l.getEnlazado());
             factc01.setTipDocE(l.getTipDocE());
@@ -625,7 +643,15 @@ public class PreciosBean extends Conexion implements Serializable {
                 parFactc01.setTipCam(l.getTipCam());
                 parFactc01.setUniVenta(l.getUniVenta());
                 parFactc01.setTipoProd(l.getTipoProd());
-                parFactc01.setCveObs(folioObsDocf01);//**FOLIO OBS**//
+                //BUSCAR CVE_OBS Y GUARDAR DATO
+                int dato_folio = folObsDoc();
+                if (!l.getCveObs().equals(0)) {
+                    buscarDatosPartidaCveObs(l.getCveObs(), dato_folio);
+                    parFactc01.setCveObs(dato_folio);
+                } else {
+                    parFactc01.setCveObs(0);
+                }
+                //**FOLIO OBS**//
                 parFactc01.setRegSerie(l.getRegSerie());
                 parFactc01.setELtpd(l.getELtpd());
                 parFactc01.setTipoElem(l.getTipoElem());
@@ -646,49 +672,27 @@ public class PreciosBean extends Conexion implements Serializable {
                 //parFactc01.setCveProdserv("");
                 //parFactc01.setCveUnidad("");
                 guardarPartidasDao.guardarParFactc01(parFactc01);
+
             });
+
         }
         //**PAR_FACTC01**//
 
         //**"PAR_FACTC_CLIB01"**//
         partidasClib(cveDoc, ultFolio);
-        //       ISaeDao partidasClibDao = new SaeDaoImpl();
-//        listarPartidasClib.clear();
-//        listarPartidasClib = partidasClibDao.listaPartidasClib01(docu);
-//
-//        listarPartidasClib.stream().map((p) -> {
-//            parFactcClib01 = new ParFactcClib01();
-//            return p;
-//        }).forEachOrdered((p) -> {
-//            parFactcClib01.setClaveDoc("C-" + ultFolio);
-//            parFactcClib01.setNumPart(p.getNumPart());
-//            parFactcClib01.setCamplib1(p.getCamplib1());
-//            parFactcClib01.setCamplib2(p.getCamplib2());
-//            ISaeDao gDao = new SaeDaoImpl();
-//            try {
-//                gDao.guardarParFactcClib01(parFactcClib01);
-//            } catch (Exception e) {
-//                System.out.println(e.getMessage());
-//            }
-//
-//        });
+        maxObsPartidas(ultFolio);
         //**"PAR_FACTC_CLIB01"**//
 
-        //**"OBS_DOCF01"**//
-        ISaeDao ObsDao = new SaeDaoImpl();
-        listaObsDoc.clear();
-        listaObsDoc = ObsDao.listaObsDoc(folioObsDocf01Ante);
-        listaObsDoc.stream().map((fobs) -> {
-            od = new ObsDocf01();
-            return fobs;
-        }).forEachOrdered((fobs) -> {
-            od.setCveObs(folioObsDocf01);
-            od.setStrObs(fobs.getStrObs());
-            ISaeDao dao = new SaeDaoImpl();
-            dao.guardarObsDocc01(od);
-        });
-        //**"OBS_DOCF01"**//
+        //***FOLIOSF01**//
+        actualizarFolio(ultFolio);
+        //***FOLIOSF01**//
+        //**ACTUALIZAR LOS PRECIOS CON EL PORCENTAJE**//
+        actualizar("C-" + ultFolio, docu);
+        //**ACTUALIZAR LOS PRECIOS CON EL PORCENTAJE**//
 
+    }
+
+    public void actualizarInfEnvio(int uFolio, int cve, int info) {
         //**"INFENVIO01"**//
         try {
             Conectar();
@@ -699,7 +703,7 @@ public class PreciosBean extends Conexion implements Serializable {
 
             } else {
                 while (rs.next()) {
-                    String sinInfo = "F";
+                    String sinInfo = "0";
                     i = new Infenvio01();
                     try {
                         Optional<String> CVE_CONS = Optional.ofNullable(rs.getString("CVE_CONS"));
@@ -918,11 +922,11 @@ public class PreciosBean extends Conexion implements Serializable {
             try {
                 Conectar();
                 String sqlInsert = "INSERT INTO INFENVIO01 (CVE_INFO, CVE_CONS, NOMBRE, CALLE, NUMINT, NUMEXT, CRUZAMIENTOS, CRUZAMIENTOS2, POB, CURP, REFERDIR, CVE_ZONA, CVE_OBS, STRNOGUIA, STRMODOENV, FECHA_ENV, NOMBRE_RECEP, NO_RECEP, FECHA_RECEP, COLONIA, CODIGO, ESTADO, PAIS, MUNICIPIO, PAQUETERIA, CVE_PED_TIEND, F_ENTREGA, R_FACTURA, R_EVIDENCIA, ID_GUIA, FAC_ENV, GUIA_ENV, REG_FISC, CVE_PAIS_SAT, FEEDDOCUMENT_GUIA)"
-                        + "VALUES (" + datEnv + ", '" + i.getCveCons() + "', '" + i.getNombre() + "', '" + i.getCalle() + "', '" + i.getNumint() + "', '" + i.getNumext() + "', "
+                        + "VALUES (" + info + ", '" + i.getCveCons() + "', '" + i.getNombre() + "', '" + i.getCalle() + "', '" + i.getNumint() + "', '" + i.getNumext() + "', "
                         + "'" + i.getCruzamientos() + "', '" + i.getCruzamientos2() + "', '" + i.getPob() + "', '" + i.getCurp() + "', '" + i.getReferdir() + "', '" + i.getCveZona() + "', "
-                        + "" + folioObsDocf01 + ", '" + i.getStrnoguia() + "', '" + i.getStrmodoenv() + "', NULL, '" + i.getNoRecep() + "', '" + i.getNoRecep() + "', "
+                        + "" + cve + ", '" + i.getStrnoguia() + "', '" + i.getStrmodoenv() + "', NULL, '" + i.getNoRecep() + "', '" + i.getNoRecep() + "', "
                         + "NULL, '" + i.getColonia() + "', '" + i.getCodigo() + "', '" + i.getEstado() + "', '" + i.getPais() + "', '" + i.getMunicipio() + "', "
-                        + "'" + i.getPaqueteria() + "', '" + i.getCvePedTiend() + "', NULL, 'C-" + ultFolio + "', '" + i.getrEvidencia() + "', '" + i.getIdGuia() + "', "
+                        + "'" + i.getPaqueteria() + "', '" + i.getCvePedTiend() + "', NULL, 'C-" + uFolio + "', '" + i.getrEvidencia() + "', '" + i.getIdGuia() + "', "
                         + "'" + i.getFacEnv() + "', '" + i.getGuiaEnv() + "', '" + i.getRegFisc() + "', '" + i.getCvePaisSat() + "', NULL)";
                 PreparedStatement ps = getCn().prepareStatement(sqlInsert);
                 ps.executeUpdate();
@@ -935,18 +939,56 @@ public class PreciosBean extends Conexion implements Serializable {
             System.err.println(e.getMessage());
         }
         //**"INFENVIO01"**//
+    }
 
-        //***FOLIOSF01**//
-        actualizarFolio(ultFolio);
-        //***FOLIOSF01**//
-        //**ACTUALIZAR LOS PRECIOS CON EL PORCENTAJE**//
-        actualizar("C-" + ultFolio, docu);
-        //**ACTUALIZAR LOS PRECIOS CON EL PORCENTAJE**//
+    //**MAX FOLIO CVE_OBS***//
+    public void maxObsPartidas(int doc) {
+        int maxfol = 0;
+        try {
+            Conectar();
+            Statement st = getCn().createStatement();
+            String sql = "SELECT MAX(CVE_OBS) AS CVE_OBS  FROM PAR_FACTC01 WHERE CVE_DOC='C-" + doc + "'";
+            ResultSet rs = st.executeQuery(sql);
+            if (!rs.isBeforeFirst()) {
+            } else {
+                while (rs.next()) {
+                    maxfol = rs.getInt("CVE_OBS");
+                    actualizarTblControl01(maxfol);
+                }
+            }
+            Cerrar();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
 
     }
 
+    public void actualizarTblControl01(int folio) {
+        try {
+            Conectar();
+            String sql = "UPDATE TBLCONTROL01 SET ULT_CVE='" + folio + "' WHERE ID_TABLA=56";
+            PreparedStatement ps = getCn().prepareStatement(sql);
+            ps.executeUpdate();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(PreciosBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void actualizarTblControl012(int folio) {
+        try {
+            Conectar();
+            String sql = "UPDATE TBLCONTROL01 SET ULT_CVE='" + folio + "' WHERE ID_TABLA=70";
+            PreparedStatement ps = getCn().prepareStatement(sql);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            Logger.getLogger(PreciosBean.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    //PASO 1
     public int nuevoCveInfo() {
-        datEnv = 0;
+        int datoEnv = 0;
         try {
             Conectar();
             Statement st = getCn().createStatement();
@@ -955,7 +997,28 @@ public class PreciosBean extends Conexion implements Serializable {
             if (!rs.isBeforeFirst()) {
             } else {
                 while (rs.next()) {
-                    datEnv = rs.getInt("CVE_INFO");
+                    datoEnv = rs.getInt("CVE_INFO");
+                }
+            }
+            Cerrar();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return datoEnv;
+    }
+
+    //**MAX FOLIO CVE_OBS***//
+    public int folObsDoc() {
+        datEnv = 0;
+        try {
+            Conectar();
+            Statement st = getCn().createStatement();
+            String sql = "SELECT MAX(CVE_OBS)+1 AS CVE_OBS  FROM OBS_DOCF01";
+            ResultSet rs = st.executeQuery(sql);
+            if (!rs.isBeforeFirst()) {
+            } else {
+                while (rs.next()) {
+                    datEnv = rs.getInt("CVE_OBS");
                 }
             }
             Cerrar();
@@ -965,12 +1028,33 @@ public class PreciosBean extends Conexion implements Serializable {
         return datEnv;
     }
 
-    public int folObsDoc() {
+    public int folObsDocTablaPartidas() {
         datEnv = 0;
         try {
             Conectar();
             Statement st = getCn().createStatement();
             String sql = "SELECT MAX(CVE_OBS)+1 AS CVE_OBS  FROM OBS_DOCF01";
+            ResultSet rs = st.executeQuery(sql);
+            if (!rs.isBeforeFirst()) {
+            } else {
+                while (rs.next()) {
+                    datEnv = rs.getInt("CVE_OBS");
+                }
+            }
+            Cerrar();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return datEnv;
+    }
+
+    //**MAX FOLIO CVE_OBS***//
+    public int folObsDocTblCtl() {
+        datEnv = 0;
+        try {
+            Conectar();
+            Statement st = getCn().createStatement();
+            String sql = "SELECT MAX(CVE_OBS) AS CVE_OBS  FROM OBS_DOCF01";
             ResultSet rs = st.executeQuery(sql);
             if (!rs.isBeforeFirst()) {
             } else {
@@ -1033,6 +1117,39 @@ public class PreciosBean extends Conexion implements Serializable {
             Cerrar();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    public void buscarDatosPartidaCveObs(int cveObs, int dato) {
+        try {
+
+            Conectar();
+            String sql = "SELECT STR_OBS FROM OBS_DOCF01 WHERE CVE_OBS='" + cveObs + "'";
+            Statement st = getCn().createStatement();
+            ResultSet rs = st.executeQuery(sql);
+            if (!rs.isBeforeFirst()) {
+            } else {
+                while (rs.next()) {
+                    insertarDatosPartidaCveObs(rs.getString("STR_OBS"), dato);
+                }
+            }
+            Cerrar();
+        } catch (SQLException e) {
+            Logger.getLogger(PreciosBean.class.getName()).log(Level.SEVERE, null, e);
+        }
+
+    }
+
+    public void insertarDatosPartidaCveObs(String cveO, int folio) {
+        try {
+            Conectar();
+            String sql = "INSERT INTO OBS_DOCF01 (CVE_OBS, STR_OBS) "
+                    + "VALUES (" + folio + ", '" + cveO.replace("\"", "") + "');";
+            PreparedStatement ps = getCn().prepareStatement(sql);
+            ps.executeUpdate();
+            Cerrar();
+        } catch (SQLException ex) {
+            Logger.getLogger(PreciosBean.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

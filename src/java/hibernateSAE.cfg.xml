@@ -3,19 +3,11 @@
 
 <hibernate-configuration>
     <session-factory>
-        <!--        <property name="hibernate.dialect">org.hibernate.dialect.FirebirdDialect</property>
-        <property name="hibernate.connection.driver_class">org.firebirdsql.jdbc.FBDriver</property>
-        producción
-                <property name="hibernate.connection.url">jdbc:firebirdsql://localhost:3050/C:\Program Files (x86)\Common Files\Aspel\Sistemas Aspel\SAE8.00\Empresa01\Datos\SAE80EMPRE01.FDB</property>
-        pruebas      
-        <property name="hibernate.connection.url">jdbc:firebirdsql://localhost:3050/C:\Program Files (x86)\Common Files\Aspel\Sistemas Aspel\SAE8.00\Empresa01\Datos\PRUEBAS_SAE80EMPRE01.FDB</property>
-                <property name="hibernate.connection.url">jdbc:firebirdsql://localhost:3050//firebird/data/SAE80EMPRE01.FDB</property>
-        <property name="hibernate.connection.username">sysdba</property>
-        <property name="hibernate.connection.password">masterkey</property>-->
+       
         <property name="hibernate.connection.driver_class">com.microsoft.sqlserver.jdbc.SQLServerDriver</property>
-<!--        <property name="hibernate.connection.url">jdbc:sqlserver://localhost:1433;databaseName=SAE80Empre01</property>
+<!--        <property name="hibernate.connection.url">jdbc:sqlserver://localhost;databaseName=SAE80Empre01</property>
         <property name="hibernate.connection.username">sa</property>
-        <property name="hibernate.connection.password">Dev23DMJMS1t3m45</property>-->
+        <property name="hibernate.connection.password">Pr4xi5A5a*</property>-->
         <property name="hibernate.connection.url">jdbc:sqlserver://SERVER\SQLEXPRESS;databaseName=SAE80Empre01</property>
         <property name="hibernate.connection.username">sa</property>
         <property name="hibernate.connection.password">Portales02</property>

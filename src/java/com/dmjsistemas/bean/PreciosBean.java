@@ -43,7 +43,7 @@ public class PreciosBean extends Conexion implements Serializable {
     private FactcClib01 factcClib01;
     private String cveDoc;
     private List<Inve01> listarinve01;
-    private Double porcentajeDescuento;
+    private Double porcentajeDescuento = 0.0;
     private Double cantidadTotal;
     private Double impuestoTotal;
     private Double descuentoTotal;
@@ -51,6 +51,10 @@ public class PreciosBean extends Conexion implements Serializable {
     private Double it = 0.0;
     private Double dt = 0.0;
     private Double imp = 0.0;
+    private Double ct2 = 0.0;
+    private Double it2 = 0.0;
+    private Double dt2 = 0.0;
+    private Double imp2 = 0.0;
     private ParFactcClib01 parFactcClib01;
     private int folioObsDocf01;
     private int folioObsDocf01Ante;
@@ -292,6 +296,38 @@ public class PreciosBean extends Conexion implements Serializable {
         this.i = i;
     }
 
+    public Double getCt2() {
+        return ct2;
+    }
+
+    public void setCt2(Double ct2) {
+        this.ct2 = ct2;
+    }
+
+    public Double getIt2() {
+        return it2;
+    }
+
+    public void setIt2(Double it2) {
+        this.it2 = it2;
+    }
+
+    public Double getDt2() {
+        return dt2;
+    }
+
+    public void setDt2(Double dt2) {
+        this.dt2 = dt2;
+    }
+
+    public Double getImp2() {
+        return imp2;
+    }
+
+    public void setImp2(Double imp2) {
+        this.imp2 = imp2;
+    }
+
     //**BUSCAR EL ENCABEZADO DE LA COTIZACIÓN**//
     public void buscarCotizacion() {
         ISaeDao lDao = new SaeDaoImpl();
@@ -300,6 +336,10 @@ public class PreciosBean extends Conexion implements Serializable {
         String numeroClie = null;
         for (Factc01 factc : listarFactc) {
             numeroClie = factc.getCveClpv();
+            ct2 = factc.getCanTot();
+            it2 = factc.getImpTot4();
+            dt2 = factc.getDesTot();
+            imp2 = factc.getImporte();
         }
         getListarFactc();
         listarClie = null;
@@ -316,11 +356,12 @@ public class PreciosBean extends Conexion implements Serializable {
         ISaeDao lDao = new SaeDaoImpl();
         listarFactc = null;
         listarFactc = lDao.listaFactc01(cveDoc);
+
         String numeroClie = null;
         for (Factc01 factc : listarFactc) {
             numeroClie = factc.getCveClpv();
         }
-        getListarFactc();
+        //getListarFactc();
         listarClie = null;
         ISaeDao cDao = new SaeDaoImpl();
         listarClie = cDao.listaClie01(numeroClie);
@@ -382,6 +423,9 @@ public class PreciosBean extends Conexion implements Serializable {
 
     public List<Partidas> listaDePartidasCotSimulador(String cveDocumento, Double descuento) {
         listarPartidas.clear();
+        ct2 = 0.0;
+        it2 = 0.0;
+        dt2 = 0.0;
         try {
             Conectar();
             Statement st = getCn().createStatement();
@@ -409,10 +453,13 @@ public class PreciosBean extends Conexion implements Serializable {
                     p.setPrecio(rs.getDouble("PREC") + (rs.getDouble("PREC") * (descuento / 100)));
                     p.setImporte(rs.getDouble("CANT") * (rs.getDouble("PREC") + (rs.getDouble("PREC") * (descuento / 100))));
                     p.setIva(((rs.getDouble("CANT") * (rs.getDouble("PREC") + (rs.getDouble("PREC") * (descuento / 100)))) - ((rs.getDouble("DESC1") + rs.getDouble("DESC2") + rs.getDouble("DESC3")) / 100)) * (rs.getDouble("IMPU4") / 100));
+                    ct2 += p.getImporte();
+                    it2 += p.getIva();
                     listarPartidas.add(p);
                 }
             }
             Cerrar();
+            imp2 = ct2 + it2;
         } catch (SQLException e) {
         }
         return listarPartidas;
@@ -420,9 +467,21 @@ public class PreciosBean extends Conexion implements Serializable {
 
     public void actualizar(String nuevoDocumento, String oldDocu) {
         listarPartidas.forEach((item) -> {
-            actualizarPrecioPartidas(nuevoDocumento, (porcentajeDescuento / 100), item.getPartida(), item.getClave());
+
+            Optional<Double> validarDescuento = Optional.ofNullable(porcentajeDescuento);
+            porcentajeDescuento = validarDescuento.orElse(0.0);
+            if (porcentajeDescuento != 0.0) {
+                actualizarPrecioPartidas(nuevoDocumento, (porcentajeDescuento / 100), item.getPartida(), item.getClave());
+            }
+
         });
-        actualizarPrecioEncabezado(nuevoDocumento);
+        if (porcentajeDescuento != 0.0) {
+            actualizarPrecioEncabezado(nuevoDocumento);
+        }
+
+//        if (porcentajeDescuento.equals(100.0)) {
+//            porcentajeDescuento = 0.0;
+//        }
         String info = "Se ha enviado la cotización número: " + oldDocu + "  a la cotización nueva con número: " + nuevoDocumento + " con el porcentaje: " + porcentajeDescuento + "";
         PrimeFaces.current().executeScript("Swal.fire({\n"
                 + "  position: 'top-center',\n"
@@ -530,7 +589,7 @@ public class PreciosBean extends Conexion implements Serializable {
             factc01.setCondicion(l.getCondicion());
             factc01.setNumPagos(l.getNumPagos());
             datEnvAnt = l.getDatEnvio();
-            
+
             factc01.setContado(l.getContado());
             factc01.setDatMostr(l.getDatMostr());
             factc01.setCveBita(l.getCveBita());
@@ -549,11 +608,11 @@ public class PreciosBean extends Conexion implements Serializable {
                 factc01.setCveObs(0);
             }
             folioObsDocf01Ante = l.getCveObs();
-            int dE =nuevoCveInfo();
-                  // factc01.setDatEnvio(datEnv);///
+            int dE = nuevoCveInfo();
+            // factc01.setDatEnvio(datEnv);///
             if (!l.getDatEnvio().equals(0)) {
                 factc01.setDatEnvio(l.getDatEnvio());
-                actualizarInfEnvio(ultFolio, folioObsDocf01,dE);
+                actualizarInfEnvio(ultFolio, folioObsDocf01, dE);
                 factc01.setDatEnvio(dE);
             } else {
                 factc01.setDatEnvio(0);
@@ -681,6 +740,7 @@ public class PreciosBean extends Conexion implements Serializable {
         //**"PAR_FACTC_CLIB01"**//
         partidasClib(cveDoc, ultFolio);
         maxObsPartidas(ultFolio);
+        maxObsEncabezados(ultFolio);
         //**"PAR_FACTC_CLIB01"**//
 
         //***FOLIOSF01**//
@@ -947,13 +1007,41 @@ public class PreciosBean extends Conexion implements Serializable {
         try {
             Conectar();
             Statement st = getCn().createStatement();
-            String sql = "SELECT MAX(CVE_OBS) AS CVE_OBS  FROM PAR_FACTC01 WHERE CVE_DOC='C-" + doc + "'";
+            String sql = "SELECT MAX(CVE_OBS) AS CVE_OBS FROM PAR_FACTC01 WHERE CVE_DOC='C-" + doc + "'";
             ResultSet rs = st.executeQuery(sql);
             if (!rs.isBeforeFirst()) {
             } else {
                 while (rs.next()) {
                     maxfol = rs.getInt("CVE_OBS");
-                    actualizarTblControl01(maxfol);
+                    if (maxfol != 0) {
+                        actualizarTblControl01(maxfol);
+                    }
+
+                }
+            }
+            Cerrar();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+    }
+
+    //**MAX FOLIO CVE_OBS***//
+    public void maxObsEncabezados(int doc) {
+        int maxfol = 0;
+        try {
+            Conectar();
+            Statement st = getCn().createStatement();
+            String sql = "SELECT MAX(CVE_OBS) AS CVE_OBS FROM FACTC01 WHERE CVE_DOC='C-" + doc + "'";
+            ResultSet rs = st.executeQuery(sql);
+            if (!rs.isBeforeFirst()) {
+            } else {
+                while (rs.next()) {
+                    maxfol = rs.getInt("CVE_OBS");
+                    if (maxfol != 0) {
+                        actualizarTblControl012(maxfol);
+                    }
+
                 }
             }
             Cerrar();
